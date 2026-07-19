@@ -17,6 +17,15 @@ public class Handler_Mouse extends MouseAdapter {
     @Override
     public void mouseClicked(MouseEvent e) {
         Point p = e.getPoint();
+
+        // חלונית הזנת שם פתוחה – רק OK/Cancel פעילים
+        if (panel.nameEntry.isActive()) {
+            Rectangle[] cb = UIHelper.confirmButtons(w(), h(), bw(), bh());
+            if (cb[0].contains(p)) panel.finishNameEntry(true);
+            if (cb[1].contains(p)) panel.finishNameEntry(false);
+            return;
+        }
+
         if      (panel.screen == Screen.MAIN_MENU)   mainMenuClick(p);
         else if (panel.screen == Screen.SETTINGS)    settingsClick(p);
         else if (panel.screen == Screen.HIGH_SCORES) highScoresClick(p);
@@ -71,13 +80,13 @@ public class Handler_Mouse extends MouseAdapter {
                 panel.repaint(); return;
             }
         }
-        // כפתורי הזנת שם
+        // כפתורי הזנת שם – פותחים את החלונית המעוצבת (עם השם הקיים כטקסט התחלתי)
         if (panel.settingsScreen.nameButton(1, w(), h()).contains(p)) {
-            panel.playerNames.askName1(panel);
+            panel.nameEntry.open(1, panel.playerNames.hasName1() ? panel.playerNames.getName1() : "");
             panel.repaint(); return;
         }
         if (panel.settingsScreen.nameButton(2, w(), h()).contains(p)) {
-            panel.playerNames.askName2(panel);
+            panel.nameEntry.open(2, panel.playerNames.hasName2() ? panel.playerNames.getName2() : "");
             panel.repaint(); return;
         }
         // כפתורי צליל
