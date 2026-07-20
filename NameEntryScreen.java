@@ -74,6 +74,6 @@ public class NameEntryScreen {
         Rectangle[] cb = UIHelper.confirmButtons(panelW, panelH,
                 Math.max(200, panelW / 4), btnH);
         g.drawString(hint, cx - fm.stringWidth(hint) / 2,
-                cb[0].y + cb[0].height + 22);
+                cb[0].y + cb[0].height + 30);
     }
 }
