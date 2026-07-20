@@ -46,7 +46,7 @@ public class MainMenuScreen {
         String hint = name1 + ": Arrow keys  |  " + name2 + ": WASD  |  Press 1 / 2 to start";
         fm = g.getFontMetrics();
         g.drawString(hint, cx - fm.stringWidth(hint) / 2,
-                b[4].y + b[4].height + 24);
+                b[4].y + b[4].height + 26);
 
         // שכבת אישור יציאה
         if (showExitConfirm) drawExitConfirmOverlay(g, panelW, panelH, bodyFont, btnW, btnH);
