@@ -16,11 +16,31 @@ public class Handler_Keyboard extends KeyAdapter {
     @Override
     public void keyPressed(KeyEvent e) {
         int k = e.getKeyCode();
+
+        // חלונית הזנת שם פתוחה – כל הקלט מנותב אליה
+        if (panel.nameEntry.isActive()) {
+            if (k == KeyEvent.VK_ENTER)      panel.finishNameEntry(true);
+            else if (k == KeyEvent.VK_ESCAPE) panel.finishNameEntry(false);
+            else if (k == KeyEvent.VK_BACK_SPACE) {
+                panel.nameEntry.backspace();
+                panel.repaint();
+            }
+            return;
+        }
+
         if      (panel.screen == Screen.MAIN_MENU)   mainMenuKeys(k);
         else if (panel.screen == Screen.SETTINGS
                 || panel.screen == Screen.HIGH_SCORES) escapeToMenu(k);
         else if (panel.screen == Screen.PAUSE_MENU)  pauseMenuKeys(k);
         else if (panel.screen == Screen.PLAYING)     playingKeys(k);
+    }
+
+    /** תווים מוקלדים (אותיות/ספרות/רווח) נכנסים לתיבת השם */
+    @Override
+    public void keyTyped(KeyEvent e) {
+        if (!panel.nameEntry.isActive()) return;
+        if (panel.nameEntry.typeChar(e.getKeyChar()))
+            panel.repaint();
     }
 
     // ── תפריט ראשי: 1 / 2 להתחלה מהירה ──────────────────────────

@@ -29,7 +29,8 @@ public class GamePanel extends JPanel {
     final HighScoreBoard highScores  = new HighScoreBoard();
     final SoundManager   sound       = new SoundManager();
     final GameSettings   settings    = new GameSettings(sound);
-    final PlayerNames    playerNames = new PlayerNames();
+    final PlayerNames     playerNames = new PlayerNames();
+    final NameEntryDialog nameEntry   = new NameEntryDialog();
     final GameSession    session     = new GameSession(sound, highScores, playerNames, this::repaint);
 
     // ── מחלקות ציור המסכים ───────────────────────────────────────
@@ -38,7 +39,8 @@ public class GamePanel extends JPanel {
     final HighScoresScreen highScoresScreen = new HighScoresScreen();
     final PauseMenuScreen  pauseMenuScreen  = new PauseMenuScreen();
     final GameOverScreen   gameOverScreen   = new GameOverScreen();
-    final Renderer_Game Renderer_Game = new Renderer_Game();
+    final Renderer_Game     gameRenderer     = new Renderer_Game();
+    final NameEntryScreen  nameEntryScreen  = new NameEntryScreen();
 
     // ── בנאי ─────────────────────────────────────────────────────
     public GamePanel() {
@@ -54,14 +56,49 @@ public class GamePanel extends JPanel {
     // ═════════════════════════════════════════════════════════════
     //  ניווט
     // ═════════════════════════════════════════════════════════════
-    /** מתחיל משחק חדש במצב הנבחר */
+    /** מתחיל משחק חדש – אם חסרים שמות, קודם נפתחת חלונית הזנת שם */
     void startGame(GameMode mode) {
-        playerNames.ensureNamesBeforeGame(mode, this);   // שמות חסרים? נבקש לפני הספירה לאחור
+        if (!playerNames.hasName1()) {
+            nameEntry.openForGameStart(1, mode);
+            repaint(); return;
+        }
+        if (mode == GameMode.VS && !playerNames.hasName2()) {
+            nameEntry.openForGameStart(2, mode);
+            repaint(); return;
+        }
+        startGameNow(mode);
+    }
+
+    /** ההתחלה עצמה – אחרי שכל השמות טופלו */
+    private void startGameNow(GameMode mode) {
         pendingConfirm = ConfirmAction.NONE;
         screen         = Screen.PLAYING;
         session.start(mode, settings.getSnake1Color(), settings.getSnake2Color());
         repaint();
         requestFocusInWindow();
+    }
+
+    /**
+     * סיום חלונית הזנת השם (OK או Cancel).
+     * אם החלונית נפתחה לקראת תחילת משחק – ממשיכים בתהליך:
+     * שחקן 1 סיים ב-VS וחסר שם לשחקן 2 → נפתחת חלונית לשחקן 2,
+     * אחרת המשחק מתחיל. כל שחקן נשאל פעם אחת בלבד (בלי לולאות).
+     */
+    void finishNameEntry(boolean confirmed) {
+        if (confirmed)
+            playerNames.setName(nameEntry.getPlayer(), nameEntry.getText());
+
+        int      player  = nameEntry.getPlayer();
+        GameMode pending = nameEntry.getPendingStartMode();
+        nameEntry.close();
+
+        if (pending != null) {
+            if (player == 1 && pending == GameMode.VS && !playerNames.hasName2())
+                nameEntry.openForGameStart(2, pending);
+            else
+                startGameNow(pending);
+        }
+        repaint();
     }
 
     /** ממשיך משחק מושהה */
@@ -110,6 +147,16 @@ public class GamePanel extends JPanel {
         else if (screen == Screen.HIGH_SCORES) paintHighScores(g);
         else if (screen == Screen.PLAYING)     paintPlaying(g);
         else if (screen == Screen.PAUSE_MENU)  paintPauseMenu(g);
+
+        // חלונית הזנת שם – נמשכת מעל המסך הנוכחי, כמו דיאלוג אישור
+        if (nameEntry.isActive()) {
+            Color pColor = (nameEntry.getPlayer() == 1)
+                    ? settings.getSnake1Color() : settings.getSnake2Color();
+            nameEntryScreen.draw(g, getWidth(), getHeight(),
+                    UISizes.bodyFont(getWidth()),
+                    UISizes.btnW(getWidth()), UISizes.btnH(getHeight()),
+                    nameEntry.getPlayer(), nameEntry.getText(), pColor);
+        }
     }
 
     private void paintMainMenu(Graphics g) {
@@ -142,12 +189,12 @@ public class GamePanel extends JPanel {
         int oy = UISizes.offsetY(getWidth(), getHeight());
         int bp = UISizes.boardPx(getWidth(), getHeight());
 
-        Renderer_Game.drawGame(g, session, cs, ox, oy,
+        gameRenderer.drawGame(g, session, cs, ox, oy,
                 settings.getSnake1Color(), settings.getSnake2Color(),
                 playerNames.getName1(), playerNames.getName2());
 
         if (session.getState() == GameState.COUNTDOWN)
-            Renderer_Game.drawCountdown(g, ox, oy, bp, session.getPreCount());
+            gameRenderer.drawCountdown(g, ox, oy, bp, session.getPreCount());
 
         if (session.getState() == GameState.GAME_OVER)
             gameOverScreen.draw(g, getWidth(), getHeight(),
@@ -162,7 +209,7 @@ public class GamePanel extends JPanel {
         int cs = UISizes.cellSize(getWidth(), getHeight());
         int ox = UISizes.offsetX(getWidth(), getHeight());
         int oy = UISizes.offsetY(getWidth(), getHeight());
-        Renderer_Game.drawGame(g, session, cs, ox, oy,
+        gameRenderer.drawGame(g, session, cs, ox, oy,
                 settings.getSnake1Color(), settings.getSnake2Color(),
                 playerNames.getName1(), playerNames.getName2());
 
