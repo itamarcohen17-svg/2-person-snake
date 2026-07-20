@@ -8,7 +8,7 @@
 public class NameEntryDialog {
 
     /** אורך שם מקסימלי – שומר על תצוגה נקייה */
-    public static final int MAX_LENGTH = 12;
+    public static final int MAX_LENGTH = 14;
 
     private boolean       active           = false;
     private int           player;                    // 1 או 2
@@ -57,5 +57,5 @@ public class NameEntryDialog {
     public boolean  isActive()            { return active; }
     public int      getPlayer()           { return player; }
     public GameMode getPendingStartMode() { return pendingStartMode; }
-    public String   getText()             { return text.toString().trim(); }
+    public String   getText()             { return text.toString(); }
 }
