@@ -70,6 +70,6 @@ public class PauseMenuScreen {
         String hint = "Press ESC to resume";
         FontMetrics fm = g.getFontMetrics();
         g.drawString(hint, cx - fm.stringWidth(hint) / 2,
-                b[2].y + b[2].height +21);
+                b[2].y + b[2].height +30);
     }
 }
